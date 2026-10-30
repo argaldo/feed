@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-RSS Netflix Ticker para TV</title>
+    <style>
+        :root {
+            --bg-color: #141414; /* Negro Netflix */
+            --card-width: 300px;
+            --card-height: 180px;
+            --speed: 30s; /* Tiempo de la animación */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            overflow-y: auto; /* Permite scroll vertical si hay muchas filas */
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Contenedor principal de todas las filas */
+        #feeds-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Espacio entre cada fila de contenido */
+        }
+
+        .feed-row {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .feed-title {
+            padding-left: 4%;
+            font-size: 1.5rem;
+            margin: 0 0 15px 0;
+            font-weight: 500;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Contenedor del Carrusel */
+        .ticker-container {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(90deg, rgba(20,20,20,1) 0%, rgba(20,20,20,0) 5%, rgba(20,20,20,0) 95%, rgba(20,20,20,1) 100%);
+        }
+
+        /* Desplazamiento Infinito */
+        .ticker-wrap {
+            display: flex;
+            width: max-content;
+            animation: scroll var(--speed) linear infinite;
+        }
+
+        /* Pausar al pasar el ratón */
+        .ticker-wrap:hover {
+            animation-play-state: paused;
+        }
+
+        /* Tarjetas de Contenido */
+        .feed-card {
+            width: var(--card-width);
+            height: var(--card-height);
+            margin-right: 15px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Efecto de escala al estilo Netflix */
+        .feed-card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        /* Degradado interno para que se lea el texto */
+        .feed-card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0) 100%);
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 60%;
+            box-sizing: border-box;
+        }
+
+        .feed-card h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.2rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* Animación CSS para el movimiento */
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenedor general donde se inyectará cada fila -->
+    <div id="feeds-container"></div>
+
+    <script>
+        // CONFIGURACIÓN: Añade aquí todas las URLs de los RSS que quieras mostrar
+        const RSS_FEEDS = [
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fgizmodo.com%2Fio9%2Ffeed',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.wired.com%2Ffeed%2Frss',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.polygon.com%2Ffeed',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fhnrss.org%2Fbest',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.quantamagazine.org%2Fquanta%2Ffeed%2F',
+        ];
+
+        // Imagen por defecto si la entrada del RSS no tiene miniatura
+        const DEFAULT_IMAGE = 'https://unsplash.com';
+
+        async function fetchFeedData(url) {
+            // Usamos la API de rss2json para convertir el XML del feed a JSON
+            //const apiUrl = `https://rss2json.com{encodeURIComponent(url)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Error de red');
+            const data = await response.json();
+            if (data.status !== 'ok') throw new Error('Error al parsear el RSS');
+            return data;
+        }
+
+        async function loadAllFeeds() {
+            const container = document.getElementById('feeds-container');
+            container.innerHTML = ''; // Limpiamos el contenedor antes de cargar
+
+            // Procesamos cada feed del array
+            for (const url of RSS_FEEDS) {
+                try {
+                    const data = await fetchFeedData(url);
+                    
+                    // Creamos la estructura de la fila (Fila -> Título + Ticker Container -> Ticker Wrap)
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'feed-row';
+
+                    const titleEl = document.createElement('h2');
+                    titleEl.className = 'feed-title';
+                    titleEl.innerText = data.feed.title || 'Feed de Noticias';
+
+                    const tickerContainer = document.createElement('div');
+                    tickerContainer.className = 'ticker-container';
+
+                    const tickerWrap = document.createElement('div');
+                    tickerWrap.className = 'ticker-wrap';
+
+                    let cardsHTML = '';
+
+                    // Construimos las tarjetas para este feed específico
+                    data.items.forEach(item => {
+                        let imageUrl = item.thumbnail || (item.enclosure && item.enclosure.link) || DEFAULT_IMAGE;
+
+                        if (imageUrl === DEFAULT_IMAGE && item.description) {
+                            const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                            if (imgMatch && imgMatch[1]) imageUrl = imgMatch[1];
+                        }
+
+                        cardsHTML += `
+                            <div class="feed-card" style="background-image: url('${imageUrl}')" onclick="window.open('${item.link}', '_blank')">
+                                <div class="feed-card-overlay">
+                                    <h3>${item.title}</h3>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Truco del scroll infinito: inyectamos el HTML duplicado dentro de su carrusel
+                    tickerWrap.innerHTML = cardsHTML + cardsHTML;
+                    
+                    // Ensamblamos la fila e indexamos al contenedor principal
+                    tickerContainer.appendChild(tickerWrap);
+                    rowDiv.appendChild(titleEl);
+                    rowDiv.appendChild(tickerContainer);
+                    container.appendChild(rowDiv);
+
+                } catch (error) {
+                    console.error(`Error cargando el feed (${url}):`, error);
+                    // Opcional: mostrar una fila visual con el error para ese feed específico
+                    const errorRow = document.createElement('div');
+                    errorRow.className = 'feed-row';
+                    errorRow.innerHTML = `<h2 class="feed-title" style="color: #e50914;">Error al cargar: ${url}</h2>`;
+                    container.appendChild(errorRow);
+                }
+            }
+        }
+
+        // Cargar al iniciar
+        loadAllFeeds();
+
+        // Actualizar automáticamente todos los feeds cada 10 minutos
+        setInterval(loadAllFeeds, 10 * 60 * 1000);
+    </script>
+</body>
+</html>
+
