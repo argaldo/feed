@@ -7,9 +7,10 @@
     <style>
         :root {
             --bg-color: #141414;
-            --card-width: 300px;
-            --card-height: 180px;
-            --speed: 140s;
+            --card-width: 200px;
+            --card-height: 120px;
+            --speed: 145s;
+            --font-size: 15px;
         }
 
         body {
@@ -149,8 +150,8 @@
 
         .feed-card h3 {
             margin: 0;
-            font-size: 0.95rem;
-            line-height: 1.2rem;
+            font-size: var(--font-size);
+            line-height: 1.25;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -170,6 +171,7 @@
                 right: 10px;
                 gap: 12px;
                 justify-content: space-around;
+                flex-wrap: wrap;
             }
 
             .setting {
@@ -187,10 +189,11 @@
 
     <!-- Panel de configuración -->
     <div id="settings">
+
         <div class="setting">
             <div class="setting-header">
                 <label for="speedSlider">Velocidad</label>
-                <span class="setting-value" id="speedValue">100 s</span>
+                <span class="setting-value" id="speedValue">145 s</span>
             </div>
             <input
                 type="range"
@@ -198,14 +201,14 @@
                 min="20"
                 max="200"
                 step="5"
-                value="100"
+                value="145"
             >
         </div>
 
         <div class="setting">
             <div class="setting-header">
                 <label for="sizeSlider">Tamaño artículos</label>
-                <span class="setting-value" id="sizeValue">300 px</span>
+                <span class="setting-value" id="sizeValue">200 px</span>
             </div>
             <input
                 type="range"
@@ -213,9 +216,25 @@
                 min="200"
                 max="500"
                 step="10"
-                value="300"
+                value="200"
             >
         </div>
+
+        <div class="setting">
+            <div class="setting-header">
+                <label for="fontSlider">Tamaño fuente</label>
+                <span class="setting-value" id="fontValue">15 px</span>
+            </div>
+            <input
+                type="range"
+                id="fontSlider"
+                min="10"
+                max="24"
+                step="1"
+                value="15"
+            >
+        </div>
+
     </div>
 
     <div id="feeds-container"></div>
@@ -235,11 +254,13 @@
         // Controles de configuración
         const speedSlider = document.getElementById('speedSlider');
         const sizeSlider = document.getElementById('sizeSlider');
+        const fontSlider = document.getElementById('fontSlider');
 
         const speedValue = document.getElementById('speedValue');
         const sizeValue = document.getElementById('sizeValue');
+        const fontValue = document.getElementById('fontValue');
 
-        // Modificar velocidad sin recargar los feeds
+        // Modificar velocidad
         speedSlider.addEventListener('input', () => {
             const speed = speedSlider.value;
 
@@ -267,6 +288,18 @@
             );
 
             sizeValue.textContent = width + ' px';
+        });
+
+        // Modificar tamaño de la fuente
+        fontSlider.addEventListener('input', () => {
+            const fontSize = Number(fontSlider.value);
+
+            document.documentElement.style.setProperty(
+                '--font-size',
+                fontSize + 'px'
+            );
+
+            fontValue.textContent = fontSize + ' px';
         });
 
         async function fetchFeedData(url) {
@@ -306,8 +339,6 @@
                     const tickerWrap = document.createElement('div');
                     tickerWrap.className = 'ticker-wrap';
 
-                    let cardsHTML = '';
-
                     data.items.forEach(item => {
                         let imageUrl =
                             item.thumbnail ||
@@ -345,7 +376,7 @@
                     });
 
                     // Duplicar tarjetas para el desplazamiento infinito
-                    cardsHTML = tickerWrap.innerHTML;
+                    const cardsHTML = tickerWrap.innerHTML;
                     tickerWrap.innerHTML = cardsHTML + cardsHTML;
 
                     tickerContainer.appendChild(tickerWrap);
