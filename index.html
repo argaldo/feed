@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -110,6 +111,10 @@
         }
 
         .feed-card {
+            display: block;
+            text-decoration: none;
+            color: white;
+
             width: var(--card-width);
             height: var(--card-height);
             flex-shrink: 0;
@@ -355,13 +360,13 @@
                             }
                         }
 
-                        const card = document.createElement('div');
+                        // La tarjeta es ahora un enlace HTML real
+                        const card = document.createElement('a');
                         card.className = 'feed-card';
+                        card.href = item.link;
+                        card.target = '_blank';
+                        card.rel = 'noopener noreferrer';
                         card.style.backgroundImage = `url("${imageUrl}")`;
-
-                        card.addEventListener('click', () => {
-                            window.open(item.link, '_blank', 'noopener');
-                        });
 
                         const overlay = document.createElement('div');
                         overlay.className = 'feed-card-overlay';
@@ -375,7 +380,8 @@
                         tickerWrap.appendChild(card);
                     });
 
-                    // Duplicar tarjetas para el desplazamiento infinito
+                    // Duplicar tarjetas para el desplazamiento infinito.
+                    // Al ser enlaces HTML, las copias conservan sus destinos.
                     const cardsHTML = tickerWrap.innerHTML;
                     tickerWrap.innerHTML = cardsHTML + cardsHTML;
 
