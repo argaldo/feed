@@ -6,10 +6,10 @@
     <title>Multi-RSS Netflix Ticker para TV</title>
     <style>
         :root {
-            --bg-color: #141414; /* Negro Netflix */
+            --bg-color: #141414;
             --card-width: 300px;
             --card-height: 180px;
-            --speed: 100s; /* Tiempo de la animación */
+            --speed: 100s;
         }
 
         body {
@@ -18,16 +18,57 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 20px 0;
-            overflow-y: auto; /* Permite scroll vertical si hay muchas filas */
+            overflow-y: auto;
             min-height: 100vh;
             box-sizing: border-box;
         }
 
-        /* Contenedor principal de todas las filas */
+        /* Panel de configuración */
+        #settings {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            background: rgba(20, 20, 20, 0.95);
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.6);
+        }
+
+        .setting {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #ddd;
+        }
+
+        .setting-value {
+            color: #e50914;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            accent-color: #e50914;
+            cursor: pointer;
+        }
+
+        /* Contenedor principal */
         #feeds-container {
             display: flex;
             flex-direction: column;
-            gap: 40px; /* Espacio entre cada fila de contenido */
+            gap: 40px;
         }
 
         .feed-row {
@@ -44,30 +85,33 @@
             text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
         }
 
-        /* Contenedor del Carrusel */
         .ticker-container {
             width: 100%;
             overflow: hidden;
             position: relative;
-            background: linear-gradient(90deg, rgba(20,20,20,1) 0%, rgba(20,20,20,0) 5%, rgba(20,20,20,0) 95%, rgba(20,20,20,1) 100%);
+            background: linear-gradient(
+                90deg,
+                rgba(20,20,20,1) 0%,
+                rgba(20,20,20,0) 5%,
+                rgba(20,20,20,0) 95%,
+                rgba(20,20,20,1) 100%
+            );
         }
 
-        /* Desplazamiento Infinito */
         .ticker-wrap {
             display: flex;
             width: max-content;
             animation: scroll var(--speed) linear infinite;
         }
 
-        /* Pausar al pasar el ratón */
         .ticker-wrap:hover {
             animation-play-state: paused;
         }
 
-        /* Tarjetas de Contenido */
         .feed-card {
             width: var(--card-width);
             height: var(--card-height);
+            flex-shrink: 0;
             margin-right: 15px;
             background-size: cover;
             background-position: center;
@@ -79,19 +123,22 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
-        /* Efecto de escala al estilo Netflix */
         .feed-card:hover {
             transform: scale(1.05);
             z-index: 10;
         }
 
-        /* Degradado interno para que se lea el texto */
         .feed-card-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0) 100%);
+            background: linear-gradient(
+                to top,
+                rgba(0,0,0,0.9) 0%,
+                rgba(0,0,0,0.5) 60%,
+                rgba(0,0,0,0) 100%
+            );
             padding: 15px 10px;
             display: flex;
             flex-direction: column;
@@ -111,51 +158,140 @@
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
 
-        /* Animación CSS para el movimiento */
         @keyframes scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
+        }
+
+        /* Adaptación a pantallas pequeñas */
+        @media (max-width: 650px) {
+            #settings {
+                left: 10px;
+                right: 10px;
+                gap: 12px;
+                justify-content: space-around;
+            }
+
+            .setting {
+                min-width: 0;
+                flex: 1;
+            }
+
+            input[type="range"] {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Contenedor general donde se inyectará cada fila -->
+    <!-- Panel de configuración -->
+    <div id="settings">
+        <div class="setting">
+            <div class="setting-header">
+                <label for="speedSlider">Velocidad</label>
+                <span class="setting-value" id="speedValue">100 s</span>
+            </div>
+            <input
+                type="range"
+                id="speedSlider"
+                min="20"
+                max="200"
+                step="5"
+                value="100"
+            >
+        </div>
+
+        <div class="setting">
+            <div class="setting-header">
+                <label for="sizeSlider">Tamaño artículos</label>
+                <span class="setting-value" id="sizeValue">300 px</span>
+            </div>
+            <input
+                type="range"
+                id="sizeSlider"
+                min="200"
+                max="500"
+                step="10"
+                value="300"
+            >
+        </div>
+    </div>
+
     <div id="feeds-container"></div>
 
     <script>
-        // CONFIGURACIÓN: Añade aquí todas las URLs de los RSS que quieras mostrar
         const RSS_FEEDS = [
             'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fgizmodo.com%2Fio9%2Ffeed',
             'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.wired.com%2Ffeed%2Frss',
             'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.polygon.com%2Ffeed',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fhnrss.org%2Fbest',
             'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.quantamagazine.org%2Ffeed%2F',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fhnrss.org%2Fbest',
         ];
 
-        // Imagen por defecto si la entrada del RSS no tiene miniatura
         const DEFAULT_IMAGE = 'https://unsplash.com';
 
+        // Controles de configuración
+        const speedSlider = document.getElementById('speedSlider');
+        const sizeSlider = document.getElementById('sizeSlider');
+
+        const speedValue = document.getElementById('speedValue');
+        const sizeValue = document.getElementById('sizeValue');
+
+        // Modificar velocidad sin recargar los feeds
+        speedSlider.addEventListener('input', () => {
+            const speed = speedSlider.value;
+
+            document.documentElement.style.setProperty(
+                '--speed',
+                speed + 's'
+            );
+
+            speedValue.textContent = speed + ' s';
+        });
+
+        // Modificar tamaño de las tarjetas
+        sizeSlider.addEventListener('input', () => {
+            const width = Number(sizeSlider.value);
+            const height = Math.round(width * 0.6);
+
+            document.documentElement.style.setProperty(
+                '--card-width',
+                width + 'px'
+            );
+
+            document.documentElement.style.setProperty(
+                '--card-height',
+                height + 'px'
+            );
+
+            sizeValue.textContent = width + ' px';
+        });
+
         async function fetchFeedData(url) {
-            // Usamos la API de rss2json para convertir el XML del feed a JSON
-            //const apiUrl = `https://rss2json.com{encodeURIComponent(url)}`;
             const response = await fetch(url);
-            if (!response.ok) throw new Error('Error de red');
+
+            if (!response.ok) {
+                throw new Error('Error de red');
+            }
+
             const data = await response.json();
-            if (data.status !== 'ok') throw new Error('Error al parsear el RSS');
+
+            if (data.status !== 'ok') {
+                throw new Error('Error al parsear el RSS');
+            }
+
             return data;
         }
 
         async function loadAllFeeds() {
             const container = document.getElementById('feeds-container');
-            container.innerHTML = ''; // Limpiamos el contenedor antes de cargar
+            container.innerHTML = '';
 
-            // Procesamos cada feed del array
             for (const url of RSS_FEEDS) {
                 try {
                     const data = await fetchFeedData(url);
-                    
-                    // Creamos la estructura de la fila (Fila -> Título + Ticker Container -> Ticker Wrap)
+
                     const rowDiv = document.createElement('div');
                     rowDiv.className = 'feed-row';
 
@@ -171,28 +307,46 @@
 
                     let cardsHTML = '';
 
-                    // Construimos las tarjetas para este feed específico
                     data.items.forEach(item => {
-                        let imageUrl = item.thumbnail || (item.enclosure && item.enclosure.link) || DEFAULT_IMAGE;
+                        let imageUrl =
+                            item.thumbnail ||
+                            (item.enclosure && item.enclosure.link) ||
+                            DEFAULT_IMAGE;
 
                         if (imageUrl === DEFAULT_IMAGE && item.description) {
-                            const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
-                            if (imgMatch && imgMatch[1]) imageUrl = imgMatch[1];
+                            const imgMatch = item.description.match(
+                                /<img[^>]+src="([^">]+)"/
+                            );
+
+                            if (imgMatch && imgMatch[1]) {
+                                imageUrl = imgMatch[1];
+                            }
                         }
 
-                        cardsHTML += `
-                            <div class="feed-card" style="background-image: url('${imageUrl}')" onclick="window.open('${item.link}', '_blank')">
-                                <div class="feed-card-overlay">
-                                    <h3>${item.title}</h3>
-                                </div>
-                            </div>
-                        `;
+                        const card = document.createElement('div');
+                        card.className = 'feed-card';
+                        card.style.backgroundImage = `url("${imageUrl}")`;
+
+                        card.addEventListener('click', () => {
+                            window.open(item.link, '_blank', 'noopener');
+                        });
+
+                        const overlay = document.createElement('div');
+                        overlay.className = 'feed-card-overlay';
+
+                        const heading = document.createElement('h3');
+                        heading.textContent = item.title;
+
+                        overlay.appendChild(heading);
+                        card.appendChild(overlay);
+
+                        tickerWrap.appendChild(card);
                     });
 
-                    // Truco del scroll infinito: inyectamos el HTML duplicado dentro de su carrusel
+                    // Duplicar tarjetas para el desplazamiento infinito
+                    cardsHTML = tickerWrap.innerHTML;
                     tickerWrap.innerHTML = cardsHTML + cardsHTML;
-                    
-                    // Ensamblamos la fila e indexamos al contenedor principal
+
                     tickerContainer.appendChild(tickerWrap);
                     rowDiv.appendChild(titleEl);
                     rowDiv.appendChild(tickerContainer);
@@ -200,10 +354,15 @@
 
                 } catch (error) {
                     console.error(`Error cargando el feed (${url}):`, error);
-                    // Opcional: mostrar una fila visual con el error para ese feed específico
+
                     const errorRow = document.createElement('div');
                     errorRow.className = 'feed-row';
-                    errorRow.innerHTML = `<h2 class="feed-title" style="color: #e50914;">Error al cargar: ${url}</h2>`;
+
+                    errorRow.innerHTML =
+                        `<h2 class="feed-title" style="color:#e50914;">
+                            Error al cargar el feed
+                        </h2>`;
+
                     container.appendChild(errorRow);
                 }
             }
@@ -212,9 +371,8 @@
         // Cargar al iniciar
         loadAllFeeds();
 
-        // Actualizar automáticamente todos los feeds cada 10 minutos
+        // Actualizar feeds cada 10 minutos
         setInterval(loadAllFeeds, 10 * 60 * 1000);
     </script>
 </body>
 </html>
-
