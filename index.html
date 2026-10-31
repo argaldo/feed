@@ -1,50 +1,108 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>argaldo feeds</title>
+    <title>Multi-RSS Netflix Ticker para TV</title>
     <style>
         :root {
             --bg-color: #141414;
             --card-width: 200px;
             --card-height: 120px;
             --speed: 145s;
-            --font-size: 11px;
+            --font-size: 15px;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color);
             color: #fff;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px 0;
+            padding: 0 0 40px 0;
             overflow-y: auto;
             min-height: 100vh;
-            box-sizing: border-box;
         }
 
-        /* Panel de configuración */
-        #settings {
+        /* Botón hamburguesa */
+        #menu-button {
             position: fixed;
             top: 15px;
             right: 20px;
-            z-index: 1000;
+            z-index: 1100;
+            width: 48px;
+            height: 48px;
             display: flex;
-            gap: 25px;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            background: rgba(20, 20, 20, 0.95);
-            padding: 12px 18px;
+            gap: 6px;
+            border: 0;
             border-radius: 8px;
+            background: rgba(20, 20, 20, 0.96);
             box-shadow: 0 3px 12px rgba(0,0,0,0.6);
+            cursor: pointer;
+        }
+
+        #menu-button span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            border-radius: 2px;
+            background: #fff;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        #menu-button[aria-expanded="true"] span:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+        #menu-button[aria-expanded="true"] span:nth-child(2) {
+            opacity: 0;
+        }
+        #menu-button[aria-expanded="true"] span:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        /* Panel desplegable */
+        #settings {
+            position: fixed;
+            top: 72px;
+            right: 20px;
+            z-index: 1050;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            width: min(360px, calc(100vw - 30px));
+            max-height: calc(100vh - 90px);
+            overflow-y: auto;
+            background: rgba(20, 20, 20, 0.98);
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.7);
+        }
+
+        #settings.open { display: flex; }
+
+        .settings-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .settings-section h2 {
+            margin: 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-size: 15px;
+            font-weight: 600;
         }
 
         .setting {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            min-width: 150px;
+            gap: 6px;
         }
 
         .setting-header {
@@ -61,9 +119,158 @@
         }
 
         input[type="range"] {
-            width: 150px;
+            width: 100%;
             accent-color: #e50914;
             cursor: pointer;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #eee;
+            cursor: pointer;
+        }
+
+        .checkbox-option input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: #e50914;
+            cursor: pointer;
+        }
+
+        #feed-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* --- BANNER HERO ROTATIVO (ESTILO FADE CON PUNTOS) --- */
+        #hero-billboard {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            min-height: 400px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px 4%;
+            margin-bottom: 40px;
+            box-shadow: inset 0 -120px 80px -20px #141414;
+            transition: background-image 0.8s ease-in-out;
+        }
+
+        body.hide-hero #hero-billboard {
+            display: none !important;
+        }
+
+        #hero-billboard::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(0deg, #141414 0%, rgba(20,20,20,0.6) 50%, rgba(20,20,20,0.3) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .hero-content.fade-out {
+            opacity: 0;
+        }
+
+        .hero-badge {
+            background-color: #e50914;
+            color: white;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            width: fit-content;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            margin: 0;
+            font-weight: 800;
+            line-height: 1.1;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: #ddd;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+
+        .hero-btn {
+            background: white;
+            color: black;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            width: fit-content;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .hero-btn:hover {
+            background: rgba(255,255,255,0.8);
+        }
+
+        /* Puntos indicadores de paginación */
+        .hero-dots {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .hero-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .hero-dot.active {
+            background: #e50914;
+            transform: scale(1.3);
         }
 
         /* Contenedor principal */
@@ -79,14 +286,27 @@
             width: 100%;
         }
 
+        .feed-row[hidden] { display: none; }
+
         .feed-title {
             padding-left: 4%;
             font-size: 1.5rem;
             margin: 0 0 15px 0;
             font-weight: 500;
             text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
+        .feed-update-date {
+            font-size: 0.9rem;
+            color: #8c8c8c;
+            font-weight: 400;
+        }
+
+        /* --- TICKER VS MODO CUADRÍCULA (GRID) --- */
         .ticker-container {
             width: 100%;
             overflow: hidden;
@@ -106,15 +326,28 @@
             animation: scroll var(--speed) linear infinite;
         }
 
-        .ticker-wrap:hover {
-            animation-play-state: paused;
+        .ticker-wrap:hover { animation-play-state: paused; }
+
+        body.grid-mode .ticker-container {
+            overflow: visible;
+            background: none;
+            padding: 0 4%;
+        }
+
+        body.grid-mode .ticker-wrap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--card-width), 1fr));
+            width: 100%;
+            animation: none;
+            gap: 20px;
+        }
+
+        body.grid-mode .ticker-wrap .feed-card.duplicate-card {
+            display: none !important;
         }
 
         .feed-card {
             display: block;
-            text-decoration: none;
-            color: white;
-
             width: var(--card-width);
             height: var(--card-height);
             flex-shrink: 0;
@@ -125,13 +358,49 @@
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.3s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-decoration: none;
+            color: white;
+            padding-left: 55px;
+            transition: padding-left 0.3s ease, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+        }
+
+        body.grid-mode .feed-card {
+            width: 100% !important;
+            height: calc(var(--card-height) * 1.3);
+            margin-right: 0;
+        }
+
+        body.hide-ranks .feed-card {
+            padding-left: 10px;
+        }
+
+        .feed-card::before {
+            content: attr(data-rank);
+            position: absolute;
+            left: -10px;
+            bottom: -15px;
+            font-size: 110px;
+            font-weight: 900;
+            font-family: 'Impact', sans-serif;
+            color: #e50914;
+            -webkit-text-stroke: 3px #000000;
+            text-shadow: 3px 3px 0px #000;
+            z-index: 2;
+            pointer-events: none;
+            line-height: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        body.hide-ranks .feed-card::before {
+            opacity: 0;
+            pointer-events: none;
         }
 
         .feed-card:hover {
-            transform: scale(1.05);
-            z-index: 10;
+            transform: scale(1.12);
+            z-index: 100;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.8);
         }
 
         .feed-card-overlay {
@@ -141,16 +410,16 @@
             right: 0;
             background: linear-gradient(
                 to top,
-                rgba(0,0,0,0.9) 0%,
-                rgba(0,0,0,0.5) 60%,
+                rgba(0,0,0,0.95) 0%,
+                rgba(0,0,0,0.6) 60%,
                 rgba(0,0,0,0) 100%
             );
             padding: 15px 10px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            height: 60%;
-            box-sizing: border-box;
+            height: 70%;
+            z-index: 3;
         }
 
         .feed-card h3 {
@@ -164,255 +433,547 @@
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
 
+        .trend-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(229, 9, 20, 0.9);
+            color: white;
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            z-index: 4;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
         @keyframes scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
 
-        /* Adaptación a pantallas pequeñas */
         @media (max-width: 650px) {
+            #menu-button { top: 10px; right: 10px; }
             #settings {
-                left: 10px;
+                top: 68px;
                 right: 10px;
-                gap: 12px;
-                justify-content: space-around;
-                flex-wrap: wrap;
+                width: calc(100vw - 20px);
             }
-
-            .setting {
-                min-width: 0;
-                flex: 1;
-            }
-
-            input[type="range"] {
-                width: 100%;
-            }
+            .hero-title { font-size: 2rem; }
+            #hero-billboard { height: 50vh; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Panel de configuración -->
-    <div id="settings">
+    <!-- Botón hamburguesa -->
+    <button
+        id="menu-button"
+        type="button"
+        aria-label="Abrir configuración"
+        aria-controls="settings"
+        aria-expanded="false"
+    >
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
 
-        <div class="setting">
-            <div class="setting-header">
-                <label for="speedSlider">Speed</label>
-                <span class="setting-value" id="speedValue">145 s</span>
+    <!-- Menú de configuración -->
+    <aside id="settings" aria-label="Configuración">
+
+        <section class="settings-section">
+            <h2>Presentación</h2>
+
+            <div class="setting">
+                <div class="setting-header">
+                    <label for="speedSlider">Velocidad Ticker</label>
+                    <span class="setting-value" id="speedValue">145 s</span>
+                </div>
+                <input type="range" id="speedSlider" min="20" max="200" step="5" value="145">
             </div>
-            <input
-                type="range"
-                id="speedSlider"
-                min="20"
-                max="200"
-                step="5"
-                value="145"
-            >
-        </div>
 
-        <div class="setting">
-            <div class="setting-header">
-                <label for="sizeSlider">Article Size</label>
-                <span class="setting-value" id="sizeValue">200 px</span>
+            <div class="setting">
+                <div class="setting-header">
+                    <label for="sizeSlider">Tamaño artículos</label>
+                    <span class="setting-value" id="sizeValue">200 px</span>
+                </div>
+                <input type="range" id="sizeSlider" min="200" max="500" step="10" value="200">
             </div>
-            <input
-                type="range"
-                id="sizeSlider"
-                min="200"
-                max="500"
-                step="10"
-                value="200"
-            >
-        </div>
 
-        <div class="setting">
-            <div class="setting-header">
-                <label for="fontSlider">Font Size</label>
-                <span class="setting-value" id="fontValue">11 px</span>
+            <div class="setting">
+                <div class="setting-header">
+                    <label for="fontSlider">Tamaño fuente</label>
+                    <span class="setting-value" id="fontValue">15 px</span>
+                </div>
+                <input type="range" id="fontSlider" min="10" max="24" step="1" value="15">
             </div>
-            <input
-                type="range"
-                id="fontSlider"
-                min="10"
-                max="24"
-                step="1"
-                value="11"
-            >
-        </div>
 
+            <div class="setting">
+                <label class="checkbox-option">
+                    <input type="checkbox" id="heroToggle" checked>
+                    <span>Mostrar Banner Principal (Billboard)</span>
+                </label>
+            </div>
+
+            <div class="setting">
+                <label class="checkbox-option">
+                    <input type="checkbox" id="gridToggle">
+                    <span>Modo Cuadrícula (Grid TV)</span>
+                </label>
+            </div>
+
+            <div class="setting">
+                <label class="checkbox-option">
+                    <input type="checkbox" id="rankToggle" checked>
+                    <span>Mostrar número de posición (Top 10)</span>
+                </label>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>Fuentes RSS</h2>
+            <div id="feed-options"></div>
+        </section>
+
+    </aside>
+
+    <!-- Banner Hero Rotativo con Puntos Indicadores -->
+    <div id="hero-billboard" style="display: none;">
+        <div class="hero-content" id="heroContent">
+            <span class="hero-badge" id="heroBadge">Tendencia</span>
+            <h1 class="hero-title" id="heroTitle">Cargando...</h1>
+            <p class="hero-desc" id="heroDesc"></p>
+            <a href="#" class="hero-btn" id="heroLink" target="_blank" rel="noopener noreferrer">
+                ▶ Ver Artículo
+            </a>
+        </div>
+        <div class="hero-dots" id="heroDotsContainer">
+            <!-- Los puntos se generan dinámicamente -->
+        </div>
     </div>
 
     <div id="feeds-container"></div>
 
     <script>
         const RSS_FEEDS = [
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fgizmodo.com%2Fio9%2Ffeed',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.wired.com%2Ffeed%2Frss',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fboingboing.net%2Ffeed',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Frss.beehiiv.com%2Ffeeds%2FowMwaGYU36.xml',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.feedburner.com%2Fbrainpickings%2Frss',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.polygon.com%2Ffeed',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.quantamagazine.org%2Ffeed%2F',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Frss.slashdot.org%2FSlashdot%2FslashdotMain',
-            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fhnrss.org%2Fbest',
+            {
+                id: 'io9',
+                name: 'io9',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fgizmodo.com%2Fio9%2Ffeed'
+            },
+            {
+                id: 'wired',
+                name: 'WIRED',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.wired.com%2Ffeed%2Frss'
+            },
+            {
+                id: 'boingboing',
+                name: 'Boing Boing',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fboingboing.net%2Ffeed'
+            },
+            {
+                id: 'polygon',
+                name: 'Polygon',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.polygon.com%2Ffeed'
+            },
+            {
+                id: 'quanta',
+                name: 'Quanta Magazine',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.quantamagazine.org%2Ffeed%2F'
+            },
+            {
+                id: 'hackernews',
+                name: 'Hacker News',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fhnrss.org%2Fbest'
+            }
         ];
 
         const DEFAULT_IMAGE = 'https://unsplash.com';
+        const enabledFeeds = Object.fromEntries(RSS_FEEDS.map(feed => [feed.id, true]));
+        const feedRows = new Map();
+        
+        let allFeedsData = new Map();
+        let heroItemsPool = [];
+        let heroInterval = null;
+        let currentHeroIndex = 0;
+
+        // Menú hamburguesa
+        const menuButton = document.getElementById('menu-button');
+        const settings = document.getElementById('settings');
+
+        menuButton.addEventListener('click', () => {
+            const isOpen = settings.classList.toggle('open');
+            menuButton.setAttribute('aria-expanded', String(isOpen));
+            menuButton.setAttribute(
+                'aria-label',
+                isOpen ? 'Cerrar configuración' : 'Abrir configuración'
+            );
+        });
 
         // Controles de configuración
         const speedSlider = document.getElementById('speedSlider');
         const sizeSlider = document.getElementById('sizeSlider');
         const fontSlider = document.getElementById('fontSlider');
+        const rankToggle = document.getElementById('rankToggle');
+        const heroToggle = document.getElementById('heroToggle');
+        const gridToggle = document.getElementById('gridToggle');
 
         const speedValue = document.getElementById('speedValue');
         const sizeValue = document.getElementById('sizeValue');
         const fontValue = document.getElementById('fontValue');
 
-        // Modificar velocidad
         speedSlider.addEventListener('input', () => {
             const speed = speedSlider.value;
-
-            document.documentElement.style.setProperty(
-                '--speed',
-                speed + 's'
-            );
-
+            document.documentElement.style.setProperty('--speed', speed + 's');
             speedValue.textContent = speed + ' s';
         });
 
-        // Modificar tamaño de las tarjetas
         sizeSlider.addEventListener('input', () => {
             const width = Number(sizeSlider.value);
             const height = Math.round(width * 0.6);
 
-            document.documentElement.style.setProperty(
-                '--card-width',
-                width + 'px'
-            );
-
-            document.documentElement.style.setProperty(
-                '--card-height',
-                height + 'px'
-            );
-
+            document.documentElement.style.setProperty('--card-width', width + 'px');
+            document.documentElement.style.setProperty('--card-height', height + 'px');
             sizeValue.textContent = width + ' px';
         });
 
-        // Modificar tamaño de la fuente
         fontSlider.addEventListener('input', () => {
             const fontSize = Number(fontSlider.value);
-
-            document.documentElement.style.setProperty(
-                '--font-size',
-                fontSize + 'px'
-            );
-
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
             fontValue.textContent = fontSize + ' px';
         });
 
+        rankToggle.addEventListener('change', () => {
+            document.body.classList.toggle('hide-ranks', !rankToggle.checked);
+        });
+
+        heroToggle.addEventListener('change', () => {
+            document.body.classList.toggle('hide-hero', !heroToggle.checked);
+        });
+
+        gridToggle.addEventListener('change', () => {
+            document.body.classList.toggle('grid-mode', gridToggle.checked);
+        });
+
+        function createFeedOptions() {
+            const optionsContainer = document.getElementById('feed-options');
+
+            RSS_FEEDS.forEach(feed => {
+                const label = document.createElement('label');
+                label.className = 'checkbox-option';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = true;
+                checkbox.dataset.feedId = feed.id;
+
+                checkbox.addEventListener('change', () => {
+                    enabledFeeds[feed.id] = checkbox.checked;
+
+                    const row = feedRows.get(feed.id);
+                    if (row) {
+                        row.hidden = !checkbox.checked;
+                    }
+                    rebuildHeroPool();
+                });
+
+                const name = document.createElement('span');
+                name.textContent = feed.name;
+
+                label.appendChild(checkbox);
+                label.appendChild(name);
+                optionsContainer.appendChild(label);
+            });
+        }
+
         async function fetchFeedData(url) {
             const response = await fetch(url);
-
-            if (!response.ok) {
-                throw new Error('Error de red');
-            }
-
+            if (!response.ok) throw new Error('Error de red');
             const data = await response.json();
+            if (data.status !== 'ok') throw new Error('Error al parsear el RSS');
+            return data;
+        }
 
-            if (data.status !== 'ok') {
-                throw new Error('Error al parsear el RSS');
+        function formatFeedDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '';
+                return `(Actualizado: ${date.toLocaleDateString('es-ES', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                })})`;
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function isTrending(dateString) {
+            if (!dateString) return false;
+            try {
+                const pubDate = new Date(dateString);
+                const now = new Date();
+                const diffHours = (now - pubDate) / (1000 * 60 * 60);
+                return diffHours >= 0 && diffHours <= 2;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function extractImage(item) {
+            let imageUrl = item.thumbnail || (item.enclosure && item.enclosure.link) || DEFAULT_IMAGE;
+            if (imageUrl === DEFAULT_IMAGE && item.description) {
+                const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch && imgMatch[1]) imageUrl = imgMatch[1];
+            }
+            return imageUrl;
+        }
+
+        // Reconstruir pool intercalado para el Billboard
+        function rebuildHeroPool() {
+            heroItemsPool = [];
+            const activeFeeds = RSS_FEEDS.filter(feed => enabledFeeds[feed.id] && allFeedsData.has(feed.id));
+            
+            if (activeFeeds.length === 0) {
+                document.getElementById('hero-billboard').style.display = 'none';
+                return;
             }
 
-            return data;
+            let maxItems = 0;
+            activeFeeds.forEach(feed => {
+                const items = allFeedsData.get(feed.id);
+                if (items && items.length > maxItems) maxItems = items.length;
+            });
+
+            // Tomar por ejemplo los primeros 3 artículos de cada feed intercalados para tener un pool rico de portada
+            const limitPerFeed = Math.min(maxItems, 3);
+            for (let i = 0; i < limitPerFeed; i++) {
+                activeFeeds.forEach(feed => {
+                    const items = allFeedsData.get(feed.id);
+                    if (items && items[i]) {
+                        const item = items[i];
+                        heroItemsPool.push({
+                            title: item.title || 'Sin título',
+                            description: item.description ? item.description.replace(/<[^>]*>?/gm, '') : '',
+                            link: item.link || '#',
+                            image: extractImage(item),
+                            feedName: feed.name,
+                            rank: i + 1
+                        });
+                    }
+                });
+            }
+
+            renderHeroDots();
+            if (heroItemsPool.length > 0) {
+                document.getElementById('hero-billboard').style.display = 'flex';
+                currentHeroIndex = 0;
+                updateHeroBillboard(false);
+            } else {
+                document.getElementById('hero-billboard').style.display = 'none';
+            }
+        }
+
+        // Renderizar puntos de navegación
+        function renderHeroDots() {
+            const dotsContainer = document.getElementById('heroDotsContainer');
+            dotsContainer.innerHTML = '';
+
+            heroItemsPool.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = `hero-dot ${index === 0 ? 'active' : ''}`;
+                dot.setAttribute('aria-label', `Ir a diapositiva ${index + 1}`);
+                dot.addEventListener('click', () => {
+                    currentHeroIndex = index;
+                    updateHeroBillboard(true);
+                    resetHeroTimer();
+                });
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        // Actualizar contenido del Billboard con transición suave (Fade)
+        function updateHeroBillboard(manual = false) {
+            if (heroItemsPool.length === 0) return;
+            if (currentHeroIndex >= heroItemsPool.length) currentHeroIndex = 0;
+
+            const item = heroItemsPool[currentHeroIndex];
+            const billboard = document.getElementById('hero-billboard');
+            const contentEl = document.getElementById('heroContent');
+
+            // Efecto fundido de salida
+            contentEl.classList.add('fade-out');
+
+            setTimeout(() => {
+                billboard.style.backgroundImage = `url("${item.image}")`;
+                document.getElementById('heroBadge').textContent = `Tendencia #${item.rank} • ${item.feedName}`;
+                document.getElementById('heroTitle').textContent = item.title;
+                document.getElementById('heroDesc').textContent = item.description;
+                document.getElementById('heroLink').href = item.link;
+
+                // Actualizar estado activo de los puntos
+                const dots = document.querySelectorAll('.hero-dot');
+                dots.forEach((dot, idx) => {
+                    dot.classList.toggle('active', idx === currentHeroIndex);
+                });
+
+                // Fundido de entrada
+                contentEl.classList.remove('fade-out');
+            }, 300);
+        }
+
+        function nextHeroSlide() {
+            if (heroItemsPool.length <= 1) return;
+            currentHeroIndex = (currentHeroIndex + 1) % heroItemsPool.length;
+            updateHeroBillboard();
+        }
+
+        function resetHeroTimer() {
+            if (heroInterval) clearInterval(heroInterval);
+            heroInterval = setInterval(nextHeroSlide, 6000);
+        }
+
+        async function loadFeed(feed) {
+            const container = document.getElementById('feeds-container');
+
+            try {
+                const data = await fetchFeedData(feed.url);
+
+                if (data.items && data.items.length > 0) {
+                    allFeedsData.set(feed.id, data.items);
+                }
+
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'feed-row';
+                rowDiv.hidden = !enabledFeeds[feed.id];
+
+                const titleEl = document.createElement('h2');
+                titleEl.className = 'feed-title';
+
+                const titleText = document.createElement('span');
+                titleText.textContent = data.feed.title || feed.name;
+                titleEl.appendChild(titleText);
+
+                const rawDate = (data.items && data.items.length > 0 && data.items[0].pubDate) || data.feed.pubDate;
+                const formattedDate = formatFeedDate(rawDate);
+
+                if (formattedDate) {
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'feed-update-date';
+                    dateSpan.textContent = formattedDate;
+                    titleEl.appendChild(dateSpan);
+                }
+
+                const tickerContainer = document.createElement('div');
+                tickerContainer.className = 'ticker-container';
+
+                const tickerWrap = document.createElement('div');
+                tickerWrap.className = 'ticker-wrap';
+
+                // Tarjetas normales
+                data.items.forEach((item, index) => {
+                    const imageUrl = extractImage(item);
+
+                    const card = document.createElement('a');
+                    card.className = 'feed-card';
+                    card.href = item.link || '#';
+                    card.target = '_blank';
+                    card.rel = 'noopener noreferrer';
+                    card.style.backgroundImage = `url("${imageUrl}")`;
+                    card.setAttribute('data-rank', index + 1);
+
+                    if (isTrending(item.pubDate)) {
+                        const trendBadge = document.createElement('div');
+                        trendBadge.className = 'trend-badge';
+                        trendBadge.innerHTML = '🔥 Top Trend';
+                        card.appendChild(trendBadge);
+                    }
+
+                    const overlay = document.createElement('div');
+                    overlay.className = 'feed-card-overlay';
+
+                    const heading = document.createElement('h3');
+                    heading.textContent = item.title || 'Sin título';
+
+                    overlay.appendChild(heading);
+                    card.appendChild(overlay);
+                    tickerWrap.appendChild(card);
+                });
+
+                // Tarjetas duplicadas para el ticker infinito
+                data.items.forEach((item, index) => {
+                    const imageUrl = extractImage(item);
+
+                    const card = document.createElement('a');
+                    card.className = 'feed-card duplicate-card';
+                    card.href = item.link || '#';
+                    card.target = '_blank';
+                    card.rel = 'noopener noreferrer';
+                    card.style.backgroundImage = `url("${imageUrl}")`;
+                    card.setAttribute('data-rank', index + 1);
+
+                    if (isTrending(item.pubDate)) {
+                        const trendBadge = document.createElement('div');
+                        trendBadge.className = 'trend-badge';
+                        trendBadge.innerHTML = '🔥 Top Trend';
+                        card.appendChild(trendBadge);
+                    }
+
+                    const overlay = document.createElement('div');
+                    overlay.className = 'feed-card-overlay';
+
+                    const heading = document.createElement('h3');
+                    heading.textContent = item.title || 'Sin título';
+
+                    overlay.appendChild(heading);
+                    card.appendChild(overlay);
+                    tickerWrap.appendChild(card);
+                });
+
+                tickerContainer.appendChild(tickerWrap);
+                rowDiv.appendChild(titleEl);
+                rowDiv.appendChild(tickerContainer);
+                container.appendChild(rowDiv);
+
+                feedRows.set(feed.id, rowDiv);
+
+            } catch (error) {
+                console.error(`Error cargando el feed (${feed.name}):`, error);
+
+                const errorRow = document.createElement('div');
+                errorRow.className = 'feed-row';
+                errorRow.hidden = !enabledFeeds[feed.id];
+                errorRow.innerHTML = `
+                    <h2 class="feed-title" style="color:#e50914;">
+                        Error al cargar ${feed.name}
+                    </h2>
+                `;
+                container.appendChild(errorRow);
+                feedRows.set(feed.id, errorRow);
+            }
         }
 
         async function loadAllFeeds() {
             const container = document.getElementById('feeds-container');
             container.innerHTML = '';
+            feedRows.clear();
+            allFeedsData.clear();
 
-            for (const url of RSS_FEEDS) {
-                try {
-                    const data = await fetchFeedData(url);
-
-                    const rowDiv = document.createElement('div');
-                    rowDiv.className = 'feed-row';
-
-                    const titleEl = document.createElement('h2');
-                    titleEl.className = 'feed-title';
-                    titleEl.innerText = data.feed.title || 'Feed de Noticias';
-
-                    const tickerContainer = document.createElement('div');
-                    tickerContainer.className = 'ticker-container';
-
-                    const tickerWrap = document.createElement('div');
-                    tickerWrap.className = 'ticker-wrap';
-
-                    data.items.forEach(item => {
-                        let imageUrl =
-                            item.thumbnail ||
-                            (item.enclosure && item.enclosure.link) ||
-                            DEFAULT_IMAGE;
-
-                        if (imageUrl === DEFAULT_IMAGE && item.description) {
-                            const imgMatch = item.description.match(
-                                /<img[^>]+src="([^">]+)"/
-                            );
-
-                            if (imgMatch && imgMatch[1]) {
-                                imageUrl = imgMatch[1];
-                            }
-                        }
-
-                        // La tarjeta es ahora un enlace HTML real
-                        const card = document.createElement('a');
-                        card.className = 'feed-card';
-                        card.href = item.link;
-                        card.target = '_blank';
-                        card.rel = 'noopener noreferrer';
-                        card.style.backgroundImage = `url("${imageUrl}")`;
-
-                        const overlay = document.createElement('div');
-                        overlay.className = 'feed-card-overlay';
-
-                        const heading = document.createElement('h3');
-                        heading.textContent = item.title;
-
-                        overlay.appendChild(heading);
-                        card.appendChild(overlay);
-
-                        tickerWrap.appendChild(card);
-                    });
-
-                    // Duplicar tarjetas para el desplazamiento infinito.
-                    // Al ser enlaces HTML, las copias conservan sus destinos.
-                    const cardsHTML = tickerWrap.innerHTML;
-                    tickerWrap.innerHTML = cardsHTML + cardsHTML;
-
-                    tickerContainer.appendChild(tickerWrap);
-                    rowDiv.appendChild(titleEl);
-                    rowDiv.appendChild(tickerContainer);
-                    container.appendChild(rowDiv);
-
-                } catch (error) {
-                    console.error(`Error cargando el feed (${url}):`, error);
-
-                    const errorRow = document.createElement('div');
-                    errorRow.className = 'feed-row';
-
-                    errorRow.innerHTML =
-                        `<h2 class="feed-title" style="color:#e50914;">
-                            Error al cargar el feed
-                        </h2>`;
-
-                    container.appendChild(errorRow);
-                }
+            for (let i = 0; i < RSS_FEEDS.length; i++) {
+                await loadFeed(RSS_FEEDS[i]);
             }
+
+            rebuildHeroPool();
+            resetHeroTimer();
         }
 
-        // Cargar al iniciar
+        // Inicialización
+        createFeedOptions();
         loadAllFeeds();
 
-        // Actualizar feeds cada 10 minutos
         setInterval(loadAllFeeds, 10 * 60 * 1000);
     </script>
 </body>
