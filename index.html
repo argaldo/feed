@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,7 @@
             --card-width: 200px;
             --card-height: 120px;
             --speed: 145s;
+            --breaking-speed: 80s;
             --font-size: 11px;
         }
 
@@ -20,9 +21,19 @@
             color: #fff;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 0 0 40px 0;
+            padding: 0 0 80px 0;
             overflow-y: auto;
             min-height: 100vh;
+        }
+
+        /* Focus Engine Highlight for D-Pad / TV Remotes / Laptop Keyboard */
+        .tv-focusable:focus,
+        .tv-focusable.tv-focused {
+            outline: none !important;
+            border: 3px solid #e50914 !important;
+            transform: scale(1.06) !important;
+            z-index: 500 !important;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.8) !important;
         }
 
         /* Hamburger Button */
@@ -105,6 +116,10 @@
             gap: 6px;
         }
 
+        .setting.hidden-setting {
+            display: none !important;
+        }
+
         .setting-header {
             display: flex;
             justify-content: space-between;
@@ -141,25 +156,25 @@
             cursor: pointer;
         }
 
-        #feed-options {
+        #feed-options, #breaking-feed-options {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        /* --- ROTATING HERO BANNER --- */
+        /* --- COMPACT BANNER (FULL WIDTH) --- */
         #hero-billboard {
             position: relative;
             width: 100%;
-            height: 60vh;
-            min-height: 400px;
-            background-size: cover;
-            background-position: center;
+            height: 42vh;
+            min-height: 320px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 40px 4%;
-            margin-bottom: 40px;
+            background-size: cover;
+            background-position: center;
+            padding: 30px 4%;
+            margin-bottom: 35px;
             box-shadow: inset 0 -120px 80px -20px #141414;
             transition: background-image 0.8s ease-in-out;
         }
@@ -172,7 +187,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(0deg, #141414 0%, rgba(20,20,20,0.6) 50%, rgba(20,20,20,0.3) 100%);
+            background: linear-gradient(0deg, #141414 0%, rgba(20,20,20,0.5) 60%, rgba(20,20,20,0.2) 100%);
             z-index: 1;
             pointer-events: none;
         }
@@ -180,13 +195,13 @@
         .hero-content {
             position: relative;
             z-index: 2;
-            max-width: 650px;
+            max-width: 750px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
             opacity: 1;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.4s ease-in-out;
+            margin-bottom: 12px;
         }
 
         .hero-content.fade-out {
@@ -196,8 +211,8 @@
         .hero-badge {
             background-color: #e50914;
             color: white;
-            padding: 4px 10px;
-            font-size: 12px;
+            padding: 3px 8px;
+            font-size: 11px;
             font-weight: bold;
             border-radius: 4px;
             width: fit-content;
@@ -206,11 +221,11 @@
         }
 
         .hero-title {
-            font-size: 3rem;
+            font-size: 2.2rem;
             margin: 0;
             font-weight: 800;
-            line-height: 1.1;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            line-height: 1.15;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -218,35 +233,42 @@
         }
 
         .hero-desc {
-            font-size: 1.1rem;
-            color: #ddd;
+            font-size: 1rem;
+            color: #ccc;
             margin: 0;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .hero-footer-bar {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .hero-buttons {
             display: flex;
-            gap: 12px;
+            gap: 10px;
         }
 
         .hero-btn {
             background: white;
             color: black;
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 8px 16px;
+            font-size: 0.85rem;
             font-weight: bold;
             border-radius: 4px;
-            width: fit-content;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: background 0.2s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
             border: none;
             cursor: pointer;
         }
@@ -256,16 +278,14 @@
         }
 
         .hero-dots {
-            position: relative;
-            z-index: 2;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
 
         .hero-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.4);
             border: none;
@@ -371,6 +391,78 @@
             display: flex;
             gap: 15px;
             margin-top: 15px;
+        }
+
+        /* --- BREAKING NEWS TICKER INFERIOR --- */
+        #breaking-ticker {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 44px;
+            background: rgba(20, 20, 20, 0.95);
+            border-top: 2px solid #e50914;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            overflow: hidden;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.8);
+        }
+
+        body.hide-breaking #breaking-ticker {
+            display: none !important;
+        }
+
+        .breaking-label {
+            background-color: #e50914;
+            color: white;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            padding: 0 15px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+
+        .breaking-wrap {
+            display: flex;
+            width: max-content;
+            animation: breaking-scroll var(--breaking-speed) linear infinite;
+        }
+
+        .breaking-wrap:hover {
+            animation-play-state: paused;
+        }
+
+        .breaking-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 30px;
+            font-size: 13px;
+            color: #eee;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .breaking-item:hover {
+            color: #e50914;
+            text-decoration: underline;
+        }
+
+        .breaking-item span.source {
+            color: #8c8c8c;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        @keyframes breaking-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
         /* Main Container */
@@ -562,8 +654,7 @@
                 right: 10px;
                 width: calc(100vw - 20px);
             }
-            .hero-title { font-size: 2rem; }
-            #hero-billboard { height: 50vh; }
+            .hero-title { font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -573,6 +664,7 @@
     <button
         id="menu-button"
         type="button"
+        class="tv-focusable"
         aria-label="Open settings"
         aria-controls="settings"
         aria-expanded="false"
@@ -593,7 +685,15 @@
                     <label for="speedSlider">Ticker Speed</label>
                     <span class="setting-value" id="speedValue">145 s</span>
                 </div>
-                <input type="range" id="speedSlider" min="20" max="200" step="5" value="145">
+                <input type="range" id="speedSlider" class="tv-focusable" min="20" max="200" step="5" value="145">
+            </div>
+
+            <div class="setting" id="breakingSpeedSetting">
+                <div class="setting-header">
+                    <label for="breakingSpeedSlider">Breaking News Speed</label>
+                    <span class="setting-value" id="breakingSpeedValue">80 s</span>
+                </div>
+                <input type="range" id="breakingSpeedSlider" class="tv-focusable" min="20" max="150" step="5" value="80">
             </div>
 
             <div class="setting">
@@ -601,7 +701,7 @@
                     <label for="sizeSlider">Card Size</label>
                     <span class="setting-value" id="sizeValue">200 px</span>
                 </div>
-                <input type="range" id="sizeSlider" min="200" max="500" step="10" value="200">
+                <input type="range" id="sizeSlider" class="tv-focusable" min="200" max="500" step="10" value="200">
             </div>
 
             <div class="setting">
@@ -609,34 +709,41 @@
                     <label for="fontSlider">Font Size</label>
                     <span class="setting-value" id="fontValue">11 px</span>
                 </div>
-                <input type="range" id="fontSlider" min="10" max="24" step="1" value="11">
+                <input type="range" id="fontSlider" class="tv-focusable" min="10" max="24" step="1" value="11">
             </div>
 
             <div class="setting">
                 <label class="checkbox-option">
-                    <input type="checkbox" id="heroToggle" checked>
-                    <span>Show Banner Billboard</span>
+                    <input type="checkbox" id="heroToggle" class="tv-focusable" checked>
+                    <span>Show Compact Header Banner</span>
                 </label>
             </div>
 
             <div class="setting">
                 <label class="checkbox-option">
-                    <input type="checkbox" id="gridToggle">
+                    <input type="checkbox" id="gridToggle" class="tv-focusable">
                     <span>TV Grid Mode</span>
                 </label>
             </div>
 
             <div class="setting">
                 <label class="checkbox-option">
-                    <input type="checkbox" id="rankToggle" checked>
+                    <input type="checkbox" id="rankToggle" class="tv-focusable" checked>
                     <span>Show Top 10 Ranking Numbers</span>
                 </label>
             </div>
 
             <div class="setting">
                 <label class="checkbox-option">
-                    <input type="checkbox" id="autoplayToggle">
+                    <input type="checkbox" id="autoplayToggle" class="tv-focusable">
                     <span>Lean-Back Auto-Play Mode</span>
+                </label>
+            </div>
+
+            <div class="setting">
+                <label class="checkbox-option">
+                    <input type="checkbox" id="breakingToggle" class="tv-focusable" checked>
+                    <span>Show Breaking News Ticker</span>
                 </label>
             </div>
         </section>
@@ -646,40 +753,55 @@
             <div id="feed-options"></div>
         </section>
 
+        <section class="settings-section" id="breakingFeedsSection">
+            <h2>Breaking News Feeds</h2>
+            <div id="breaking-feed-options"></div>
+        </section>
+
     </aside>
 
-    <!-- Rotating Hero Billboard -->
+    <!-- Compact Billboard Header (Full Width) -->
     <div id="hero-billboard" style="display: none;">
         <div class="hero-content" id="heroContent">
             <span class="hero-badge" id="heroBadge">Trending</span>
             <h1 class="hero-title" id="heroTitle">Loading...</h1>
             <p class="hero-desc" id="heroDesc"></p>
-            <div class="hero-buttons">
-                <button class="hero-btn" id="heroReadBtn">▶ Quick View</button>
-                <a href="#" class="hero-btn" id="heroLink" target="_blank" rel="noopener noreferrer" style="background: rgba(109, 109, 110, 0.7); color: white;">External Link ↗</a>
-            </div>
         </div>
-        <div class="hero-dots" id="heroDotsContainer"></div>
+        <div class="hero-footer-bar">
+            <div class="hero-buttons">
+                <button class="hero-btn tv-focusable" id="heroReadBtn">▶ Quick View</button>
+                <a href="#" class="hero-btn tv-focusable" id="heroLink" target="_blank" rel="noopener noreferrer" style="background: rgba(109, 109, 110, 0.7); color: white;">External ↗</a>
+            </div>
+            <div class="hero-dots" id="heroDotsContainer"></div>
+        </div>
     </div>
 
     <!-- Immersive Reading Modal (Quick View) -->
     <div id="article-modal">
         <div class="modal-card">
             <div class="modal-header-img" id="modalImg">
-                <button class="modal-close-btn" id="modalCloseBtn">✕</button>
+                <button class="modal-close-btn tv-focusable" id="modalCloseBtn">✕</button>
             </div>
             <div class="modal-body">
                 <span class="modal-meta" id="modalMeta">Source • Date</span>
                 <h2 class="modal-title" id="modalTitle">Article Title</h2>
                 <p class="modal-desc" id="modalDesc">Full article summary description goes here...</p>
                 <div class="modal-actions">
-                    <a href="#" class="hero-btn" id="modalExternalLink" target="_blank" rel="noopener noreferrer">Open Full Article ↗</a>
+                    <a href="#" class="hero-btn tv-focusable" id="modalExternalLink" target="_blank" rel="noopener noreferrer">Open Full Article ↗</a>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="feeds-container"></div>
+
+    <!-- Breaking News Ticker Bar -->
+    <div id="breaking-ticker">
+        <div class="breaking-label">Breaking News</div>
+        <div style="overflow: hidden; width: 100%; position: relative;">
+            <div class="breaking-wrap" id="breakingWrap"></div>
+        </div>
+    </div>
 
     <script>
         const RSS_FEEDS = [
@@ -715,17 +837,122 @@
             }
         ];
 
+        const BREAKING_FEEDS = [
+            {
+                id: 'elmundo',
+                name: 'El Mundo',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.elmundo.es%2Frss%2Fgooglenews%2Fportada.xml'
+            },
+            {
+                id: 'elpais',
+                name: 'El País',
+                url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.elpais.com%2Fmrss-s%2Fpages%2Fep%2Fsite%2Felpais.com%2Fportada'
+            }
+        ];
+
         const DEFAULT_IMAGE = 'https://unsplash.com';
         const enabledFeeds = Object.fromEntries(RSS_FEEDS.map(feed => [feed.id, true]));
+        const enabledBreakingFeeds = Object.fromEntries(BREAKING_FEEDS.map(feed => [feed.id, true]));
         const feedRows = new Map();
         
         let allFeedsData = new Map();
+        let breakingFeedsData = new Map();
         let heroItemsPool = [];
         let heroInterval = null;
         let currentHeroIndex = 0;
         let autoplayInterval = null;
 
-        // Hamburger Menu & Inactivity Timer
+        // --- MOTOR DE ENFOQUE MEJORADO (SPATIAL NAVIGATION PARA TV Y PORTÁTIL) ---
+        function getFocusableElements() {
+            const focusables = Array.from(document.querySelectorAll('.tv-focusable, .feed-card, .hero-dot, .breaking-item'));
+            return focusables.filter(el => {
+                const rect = el.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 && window.getComputedStyle(el).display !== 'none' && !el.disabled;
+            });
+        }
+
+        let currentFocusIndex = 0;
+
+        function updateFocus(index) {
+            const focusables = getFocusableElements();
+            if (focusables.length === 0) return;
+            
+            if (index < 0) index = focusables.length - 1;
+            if (index >= focusables.length) index = 0;
+            
+            currentFocusIndex = index;
+            const targetEl = focusables[currentFocusIndex];
+            
+            targetEl.focus();
+            targetEl.classList.add('tv-focused');
+
+            focusables.forEach((el, idx) => {
+                if (idx !== currentFocusIndex) el.classList.remove('tv-focused');
+            });
+
+            // Asegurar scroll suave automático hacia el elemento enfocado si está fuera de vista
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }
+
+        // Navegación espacial basada en coordenadas para ordenador / D-Pad
+        function findClosestElement(direction) {
+            const focusables = getFocusableElements();
+            const currentEl = document.activeElement;
+            let currentIndex = focusables.indexOf(currentEl);
+            
+            if (currentIndex === -1) return currentFocusIndex;
+
+            const currentRect = currentEl.getBoundingClientRect();
+            let closestIndex = currentIndex;
+            let minDistance = Infinity;
+
+            focusables.forEach((el, idx) => {
+                if (idx === currentIndex) return;
+                const rect = el.getBoundingClientRect();
+                let isValidDirection = false;
+                let distance = Infinity;
+
+                if (direction === 'ArrowRight' && rect.left >= currentRect.right - 20) {
+                    isValidDirection = true;
+                    distance = Math.abs(rect.top - currentRect.top) * 1.5 + Math.abs(rect.left - currentRect.right);
+                } else if (direction === 'ArrowLeft' && rect.right <= currentRect.left + 20) {
+                    isValidDirection = true;
+                    distance = Math.abs(rect.top - currentRect.top) * 1.5 + Math.abs(currentRect.left - rect.right);
+                } else if (direction === 'ArrowDown' && rect.top >= currentRect.bottom - 20) {
+                    isValidDirection = true;
+                    distance = Math.abs(rect.left - currentRect.left) * 1.5 + Math.abs(rect.top - currentRect.bottom);
+                } else if (direction === 'ArrowUp' && rect.bottom <= currentRect.top + 20) {
+                    isValidDirection = true;
+                    distance = Math.abs(rect.left - currentRect.left) * 1.5 + Math.abs(currentRect.top - rect.bottom);
+                }
+
+                if (isValidDirection && distance < minDistance) {
+                    minDistance = distance;
+                    closestIndex = idx;
+                }
+            });
+
+            return closestIndex;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const focusables = getFocusableElements();
+            if (focusables.length === 0) return;
+
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
+                e.preventDefault(); // Bloquea el comportamiento por defecto del scroll de la página en el portátil
+
+                if (e.key === 'Enter') {
+                    if (document.activeElement && typeof document.activeElement.click === 'function') {
+                        document.activeElement.click();
+                    }
+                } else {
+                    const nextIndex = findClosestElement(e.key);
+                    updateFocus(nextIndex);
+                }
+            }
+        });
+
         const menuButton = document.getElementById('menu-button');
         const settings = document.getElementById('settings');
         let settingsTimeout = null;
@@ -747,26 +974,20 @@
         function resetSettingsInactivityTimer() {
             clearTimeout(settingsTimeout);
             settingsTimeout = setTimeout(() => {
-                if (settings.classList.contains('open')) {
-                    closeSettings();
-                }
+                if (settings.classList.contains('open')) closeSettings();
             }, 5000);
         }
 
         menuButton.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (settings.classList.contains('open')) {
-                closeSettings();
-            } else {
-                openSettings();
-            }
+            if (settings.classList.contains('open')) closeSettings();
+            else openSettings();
         });
 
         settings.addEventListener('mousemove', resetSettingsInactivityTimer);
         settings.addEventListener('click', resetSettingsInactivityTimer);
         settings.addEventListener('keydown', resetSettingsInactivityTimer);
 
-        // Modal Elements Control
         const articleModal = document.getElementById('article-modal');
         const modalCloseBtn = document.getElementById('modalCloseBtn');
 
@@ -774,13 +995,15 @@
             document.getElementById('modalImg').style.backgroundImage = `url("${itemData.image}")`;
             document.getElementById('modalMeta').textContent = `${itemData.feedName} • ${itemData.dateStr || ''}`;
             document.getElementById('modalTitle').textContent = itemData.title;
-            document.getElementById('modalDesc').textContent = itemData.description || 'No detailed description available for this feed item.';
+            document.getElementById('modalDesc').textContent = itemData.description || 'No detailed description available.';
             document.getElementById('modalExternalLink').href = itemData.link;
             articleModal.classList.add('open');
+            modalCloseBtn.focus();
         }
 
         function closeModal() {
             articleModal.classList.remove('open');
+            menuButton.focus();
         }
 
         modalCloseBtn.addEventListener('click', closeModal);
@@ -788,16 +1011,20 @@
             if (e.target === articleModal) closeModal();
         });
 
-        // Configuration Controls
         const speedSlider = document.getElementById('speedSlider');
+        const breakingSpeedSetting = document.getElementById('breakingSpeedSetting');
+        const breakingSpeedSlider = document.getElementById('breakingSpeedSlider');
         const sizeSlider = document.getElementById('sizeSlider');
         const fontSlider = document.getElementById('fontSlider');
         const rankToggle = document.getElementById('rankToggle');
         const heroToggle = document.getElementById('heroToggle');
         const gridToggle = document.getElementById('gridToggle');
         const autoplayToggle = document.getElementById('autoplayToggle');
+        const breakingToggle = document.getElementById('breakingToggle');
+        const breakingFeedsSection = document.getElementById('breakingFeedsSection');
 
         const speedValue = document.getElementById('speedValue');
+        const breakingSpeedValue = document.getElementById('breakingSpeedValue');
         const sizeValue = document.getElementById('sizeValue');
         const fontValue = document.getElementById('fontValue');
 
@@ -807,10 +1034,15 @@
             speedValue.textContent = speed + ' s';
         });
 
+        breakingSpeedSlider.addEventListener('input', () => {
+            const bSpeed = breakingSpeedSlider.value;
+            document.documentElement.style.setProperty('--breaking-speed', bSpeed + 's');
+            breakingSpeedValue.textContent = bSpeed + ' s';
+        });
+
         sizeSlider.addEventListener('input', () => {
             const width = Number(sizeSlider.value);
             const height = Math.round(width * 0.6);
-
             document.documentElement.style.setProperty('--card-width', width + 'px');
             document.documentElement.style.setProperty('--card-height', height + 'px');
             sizeValue.textContent = width + ' px';
@@ -822,24 +1054,20 @@
             fontValue.textContent = fontSize + ' px';
         });
 
-        rankToggle.addEventListener('change', () => {
-            document.body.classList.toggle('hide-ranks', !rankToggle.checked);
-        });
+        rankToggle.addEventListener('change', () => document.body.classList.toggle('hide-ranks', !rankToggle.checked));
+        heroToggle.addEventListener('change', () => document.body.classList.toggle('hide-hero', !heroToggle.checked));
+        gridToggle.addEventListener('change', () => document.body.classList.toggle('grid-mode', gridToggle.checked));
 
-        heroToggle.addEventListener('change', () => {
-            document.body.classList.toggle('hide-hero', !heroToggle.checked);
-        });
-
-        gridToggle.addEventListener('change', () => {
-            document.body.classList.toggle('grid-mode', gridToggle.checked);
+        breakingToggle.addEventListener('change', () => {
+            const isHidden = !breakingToggle.checked;
+            document.body.classList.toggle('hide-breaking', isHidden);
+            breakingSpeedSetting.classList.toggle('hidden-setting', isHidden);
+            breakingFeedsSection.style.display = isHidden ? 'none' : 'flex';
         });
 
         autoplayToggle.addEventListener('change', () => {
-            if (autoplayToggle.checked) {
-                startAutoplayScroll();
-            } else {
-                stopAutoplayScroll();
-            }
+            if (autoplayToggle.checked) startAutoplayScroll();
+            else stopAutoplayScroll();
         });
 
         function startAutoplayScroll() {
@@ -863,28 +1091,48 @@
             RSS_FEEDS.forEach(feed => {
                 const label = document.createElement('label');
                 label.className = 'checkbox-option';
-
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
+                checkbox.className = 'tv-focusable';
                 checkbox.checked = true;
                 checkbox.dataset.feedId = feed.id;
 
                 checkbox.addEventListener('change', () => {
                     enabledFeeds[feed.id] = checkbox.checked;
-
                     const row = feedRows.get(feed.id);
-                    if (row) {
-                        row.hidden = !checkbox.checked;
-                    }
+                    if (row) row.hidden = !checkbox.checked;
                     rebuildHeroPool();
                 });
 
                 const name = document.createElement('span');
                 name.textContent = feed.name;
-
                 label.appendChild(checkbox);
                 label.appendChild(name);
                 optionsContainer.appendChild(label);
+            });
+
+            const breakingContainer = document.getElementById('breaking-feed-options');
+            breakingContainer.innerHTML = '';
+
+            BREAKING_FEEDS.forEach(feed => {
+                const label = document.createElement('label');
+                label.className = 'checkbox-option';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'tv-focusable';
+                checkbox.checked = true;
+                checkbox.dataset.breakingId = feed.id;
+
+                checkbox.addEventListener('change', () => {
+                    enabledBreakingFeeds[feed.id] = checkbox.checked;
+                    loadBreakingFeeds();
+                });
+
+                const name = document.createElement('span');
+                name.textContent = feed.name;
+                label.appendChild(checkbox);
+                label.appendChild(name);
+                breakingContainer.appendChild(label);
             });
         }
 
@@ -892,73 +1140,40 @@
             const response = await fetch(url);
             if (!response.ok) throw new Error('Network error');
             const data = await response.json();
-            if (data.status !== 'ok') throw new Error('Error parsing RSS feed');
+            if (data.status !== 'ok') throw new Error('Error parsing RSS');
             return data;
         }
 
-        // Formato europeo: Día/Mes/Año, Horas 24h con zona horaria (ej: 31/10/2026, 11:02 CET)
         function formatFeedDate(dateString) {
             if (!dateString) return '';
             try {
                 const date = new Date(dateString);
                 if (isNaN(date.getTime())) return '';
-                
-                const formattedDate = date.toLocaleDateString('es-ES', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-                
-                const formattedTime = date.toLocaleTimeString('es-ES', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-
-                // Obtener zona horaria de forma corta (ej: CET, CEST, etc.)
-                const tzMatch = date.toString().match(/\(([A-Za-z ]+)\)/);
-                let tzName = '';
-                if (tzMatch && tzMatch[1]) {
-                    tzName = tzMatch[1].split(' ').map(w => w[0]).join('').toUpperCase();
-                } else {
-                    const timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                    tzName = timeZoneName ? timeZoneName.split('/').pop() : '';
-                }
-
-                return `(Updated: ${formattedDate}, ${formattedTime} ${tzName})`;
-            } catch (e) {
-                return '';
-            }
+                const d = date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const t = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop() || '';
+                return `(Updated: ${d}, ${t} ${tz})`;
+            } catch (e) { return ''; }
         }
 
-        // Helper para formatear fecha de los artículos del Billboard en formato europeo
         function formatArticleDate(dateString) {
             if (!dateString) return '';
             try {
                 const date = new Date(dateString);
                 if (isNaN(date.getTime())) return '';
-                
                 const d = date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 const t = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-                const timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const tz = timeZoneName ? timeZoneName.split('/').pop() : '';
-
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop() || '';
                 return `${d}, ${t} ${tz}`;
-            } catch (e) {
-                return '';
-            }
+            } catch (e) { return ''; }
         }
 
         function isTrending(dateString) {
             if (!dateString) return false;
             try {
-                const pubDate = new Date(dateString);
-                const now = new Date();
-                const diffHours = (now - pubDate) / (1000 * 60 * 60);
-                return diffHours >= 0 && diffHours <= 2;
-            } catch (e) {
-                return false;
-            }
+                const diff = (new Date() - new Date(dateString)) / (1000 * 60 * 60);
+                return diff >= 0 && diff <= 2;
+            } catch (e) { return false; }
         }
 
         function extractImage(item) {
@@ -1017,11 +1232,9 @@
         function renderHeroDots() {
             const dotsContainer = document.getElementById('heroDotsContainer');
             dotsContainer.innerHTML = '';
-
             heroItemsPool.forEach((_, index) => {
                 const dot = document.createElement('button');
-                dot.className = `hero-dot ${index === 0 ? 'active' : ''}`;
-                dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+                dot.className = `hero-dot tv-focusable ${index === 0 ? 'active' : ''}`;
                 dot.addEventListener('click', () => {
                     currentHeroIndex = index;
                     updateHeroBillboard();
@@ -1052,12 +1265,10 @@
                 readBtn.onclick = () => openModal(item);
 
                 const dots = document.querySelectorAll('.hero-dot');
-                dots.forEach((dot, idx) => {
-                    dot.classList.toggle('active', idx === currentHeroIndex);
-                });
+                dots.forEach((dot, idx) => dot.classList.toggle('active', idx === currentHeroIndex));
 
                 contentEl.classList.remove('fade-out');
-            }, 300);
+            }, 250);
         }
 
         function nextHeroSlide() {
@@ -1071,15 +1282,50 @@
             heroInterval = setInterval(nextHeroSlide, 6000);
         }
 
+        async function loadBreakingFeeds() {
+            const breakingWrap = document.getElementById('breakingWrap');
+            breakingWrap.innerHTML = '';
+            let breakingItems = [];
+
+            for (const feed of BREAKING_FEEDS) {
+                if (!enabledBreakingFeeds[feed.id]) continue;
+                try {
+                    const data = await fetchFeedData(feed.url);
+                    if (data.items && data.items.length > 0) {
+                        data.items.slice(0, 5).forEach(item => {
+                            breakingItems.push({
+                                title: item.title || 'Untitled',
+                                link: item.link || '#',
+                                feedName: feed.name,
+                                image: extractImage(item),
+                                description: item.description ? item.description.replace(/<[^>]*>?/gm, '') : '',
+                                dateStr: formatArticleDate(item.pubDate)
+                            });
+                        });
+                    }
+                } catch (error) { console.error(error); }
+            }
+
+            for (let round = 0; round < 2; round++) {
+                breakingItems.forEach(item => {
+                    const a = document.createElement('a');
+                    a.className = 'breaking-item tv-focusable';
+                    a.href = '#';
+                    a.innerHTML = `<span class="source">[${item.feedName}]</span> ${item.title}`;
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        openModal(item);
+                    });
+                    breakingWrap.appendChild(a);
+                });
+            }
+        }
+
         async function loadFeed(feed) {
             const container = document.getElementById('feeds-container');
-
             try {
                 const data = await fetchFeedData(feed.url);
-
-                if (data.items && data.items.length > 0) {
-                    allFeedsData.set(feed.id, data.items);
-                }
+                if (data.items && data.items.length > 0) allFeedsData.set(feed.id, data.items);
 
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'feed-row';
@@ -1087,14 +1333,12 @@
 
                 const titleEl = document.createElement('h2');
                 titleEl.className = 'feed-title';
-
                 const titleText = document.createElement('span');
                 titleText.textContent = data.feed.title || feed.name;
                 titleEl.appendChild(titleText);
 
                 const rawDate = (data.items && data.items.length > 0 && data.items[0].pubDate) || data.feed.pubDate;
                 const formattedDate = formatFeedDate(rawDate);
-
                 if (formattedDate) {
                     const dateSpan = document.createElement('span');
                     dateSpan.className = 'feed-update-date';
@@ -1104,16 +1348,14 @@
 
                 const tickerContainer = document.createElement('div');
                 tickerContainer.className = 'ticker-container';
-
                 const tickerWrap = document.createElement('div');
                 tickerWrap.className = 'ticker-wrap';
 
                 data.items.forEach((item, index) => {
                     const imageUrl = extractImage(item);
                     const cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '') : '';
-
                     const card = document.createElement('div');
-                    card.className = 'feed-card';
+                    card.className = 'feed-card tv-focusable';
                     card.style.backgroundImage = `url("${imageUrl}")`;
                     card.setAttribute('data-rank', index + 1);
                     
@@ -1137,10 +1379,8 @@
 
                     const overlay = document.createElement('div');
                     overlay.className = 'feed-card-overlay';
-
                     const heading = document.createElement('h3');
                     heading.textContent = item.title || 'Untitled';
-
                     overlay.appendChild(heading);
                     card.appendChild(overlay);
                     tickerWrap.appendChild(card);
@@ -1149,9 +1389,8 @@
                 data.items.forEach((item, index) => {
                     const imageUrl = extractImage(item);
                     const cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '') : '';
-
                     const card = document.createElement('div');
-                    card.className = 'feed-card duplicate-card';
+                    card.className = 'feed-card duplicate-card tv-focusable';
                     card.style.backgroundImage = `url("${imageUrl}")`;
                     card.setAttribute('data-rank', index + 1);
 
@@ -1175,10 +1414,8 @@
 
                     const overlay = document.createElement('div');
                     overlay.className = 'feed-card-overlay';
-
                     const heading = document.createElement('h3');
                     heading.textContent = item.title || 'Untitled';
-
                     overlay.appendChild(heading);
                     card.appendChild(overlay);
                     tickerWrap.appendChild(card);
@@ -1188,20 +1425,13 @@
                 rowDiv.appendChild(titleEl);
                 rowDiv.appendChild(tickerContainer);
                 container.appendChild(rowDiv);
-
                 feedRows.set(feed.id, rowDiv);
 
             } catch (error) {
-                console.error(`Error loading feed (${feed.name}):`, error);
-
                 const errorRow = document.createElement('div');
                 errorRow.className = 'feed-row';
                 errorRow.hidden = !enabledFeeds[feed.id];
-                errorRow.innerHTML = `
-                    <h2 class="feed-title" style="color:#e50914;">
-                        Error loading ${feed.name}
-                    </h2>
-                `;
+                errorRow.innerHTML = `<h2 class="feed-title" style="color:#e50914;">Error loading ${feed.name}</h2>`;
                 container.appendChild(errorRow);
                 feedRows.set(feed.id, errorRow);
             }
@@ -1218,13 +1448,12 @@
             }
 
             rebuildHeroPool();
+            loadBreakingFeeds();
             resetHeroTimer();
         }
 
-        // Initialization
         createFeedOptions();
         loadAllFeeds();
-
         setInterval(loadAllFeeds, 10 * 60 * 1000);
     </script>
 </body>
